@@ -1,0 +1,16 @@
+<scroll-view>
+    <view class="box">
+        <view class="cu-bar">
+           <view class="action sub-title">
+           <text class="text-xl text-bold text-orange">项目选择</text>
+           <text class="bg-orange" style="width:4rem"></text>
+    </view></view></view>
+    <view style="margin-top:30rpx"> 
+        <button type="primary" plain="true" style="margin-bottom:40rpx" bindtap="tocollect" bindchooseavatar="tocollect" bindcontact="tocollect">采集数据</button>
+        <button type="primary" plain="true" style="margin-bottom:40rpx" bindtap="torecognize">动作识别</button>
+        <button type="primary" plain="true" style="margin-bottom:40rpx" bindtap="getwerun">获取步数</button>
+        <button type="primary" plain="true" style="margin-bottom:40rpx" bindtap="getlocation">获取位置</button>
+    </view>
+
+</scroll-view>
+

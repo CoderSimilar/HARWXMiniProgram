@@ -1,0 +1,75 @@
+<scroll-view>
+  <view class="box">
+    <view class="cu-bar">
+      <view class="action sub-title">
+        <text class="text-xl text-bold text-orange">动作检测</text>
+        <text class="bg-orange" style="width:4rem"></text>
+      </view>
+    </view>
+  </view>
+  <view class="contain">
+    <view class="sensor-item acc">
+      <view wx:if="{{isReading || displayValue == 30}}" style="margin-top: 20px;display: flex;justify-content: space-between;">
+        <progress percent="{{value}}" style="width:90%" />
+        <view wx:if="{{displayValue}}">{{displayValue}}s</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="list bg-white">
+    <view>
+      <view>X轴加速度</view>
+      <view>Y轴加速度</view>
+      <view>Z轴加速度</view>
+      <view>X轴角速度</view>
+      <view>Y轴角速度</view>
+      <view>Z轴角速度</view>
+    </view>
+    <view class="value">
+      <view wx:if="{{accelerometerX}}">{{accelerometerX}}</view>
+      <view wx:if="{{accelerometerY}}">{{accelerometerY}}</view>
+      <view wx:if="{{accelerometerZ}}">{{accelerometerZ}}</view>
+      <view wx:if="{{gyroscopeX}}">{{gyroscopeX}}</view>
+      <view wx:if="{{gyroscopeY}}">{{gyroscopeY}}</view>
+      <view wx:if="{{gyroscopeZ}}">{{gyroscopeZ}}</view>
+    </view>
+  </view>
+
+  <view class="bg-white padding-lr">
+    <view class="solids-bottom padding-xs flex align-center">
+      <view class="flex-sub text-center">
+        <view class="solid-bottom text-xl padding">
+          <text class="text-black text-bold">当前动作：{{current_action}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+  <view class='table' wx:if='{{detail}}'>
+    <view class='tr title line'>
+      <view class='td data td_left'>动作</view>
+      <view class='td data td_last td_right'>次数(个)</view>
+    </view>
+    <block wx:for="{{action_number}}" wx:for-item="item" wx:key="item_name">
+      <view class='tr content line'>
+        <view class='td '>{{item.keys}}</view>
+        <view class='td  td_last'>{{item.value}}</view>
+      </view>
+    </block>
+  </view>
+  <view wx:if="{{detail}}">
+    <view class="result-container">
+      <!-- ...existing content... -->
+    </view>
+    <view class="chart-container">
+      <canvas canvas-id="pieCanvas" class="pie-chart" style="width: {{canvasWidth}}px; height: {{canvasHeight}}px;"></canvas>
+    </view>
+    <view class="chart-container">
+      <canvas canvas-id="timeSeriesCanvas" class="time-series-chart" style="width: {{timeSeriesCanvasWidth}}px; height: {{timeSeriesCanvasHeight}}px;"></canvas>
+    </view>
+  </view>
+  <view style="margin-top:30rpx">
+    <button class="aaa" bindtap="clickVerify">{{literal}}</button>
+    <button class="aaa" bindtap="Reset">再来一次</button>
+  </view>
+
+</scroll-view>

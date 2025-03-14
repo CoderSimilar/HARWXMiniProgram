@@ -1,0 +1,95 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.text-xl {
+  font-size: 22px;
+  font-weight: bold;
+  color: #141414; /* 橙色 */
+  text-align: left;
+}
+
+.weui-label {
+  font-size: 24px;
+  font-weight: bold;
+  color: #f87b1a; /* 橙色 */
+  text-align: left;
+}
+
+/* 传感器项容器 */
+.sensor-item.acc {
+  margin-top: 30rpx;
+}
+
+/* 列表容器 */
+.list.bg-white {
+  display: flex;
+  padding: 20rpx;
+  background-color: #f0f2f3;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  align-items: flex-start;  /* 对齐到顶部 */
+}
+
+/* 标签容器 */
+.label-container {
+  display: flex;
+  flex-direction: column;
+  width: 40%; /* 占据40%的宽度 */
+  margin-right: 50rpx; /* 设置标签与数值之间的间距 */
+}
+.charts-container {
+  width: 100%;
+  padding: 10px;
+}
+
+.chart-item {
+  width: 100%;
+  height: 300px;
+  margin-bottom: 20px;
+}
+
+ec-canvas {
+  width: 100%;
+  height: 100%;
+}
+
+.gyroscope-chart {
+  width: 100%;
+  height: 300px;
+  margin-bottom: 20px;
+}
+
+ec-canvas.gyroscope {
+  width: 100%;
+  height: 100%;
+}
+
+.action-type-container {
+  width: 100%;
+}
+.btn-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px; 
+}
+.btn-cell {
+  width: calc(50% - 5px); 
+}
+.large-btn {
+  border: 2px solid rgb(0, 0, 0); /* 边框样式 */
+  width: 100%;
+}
+.action-wrapper {
+  border: 2px solid #ccc; /* 边框样式 */
+  padding: 10px; /* 内边距 */
+  margin-bottom: 10px; /* 下边距 */
+  border-radius: 5px; /* 圆角 */
+}
+.selected {
+  background-color: #f0f0f0; /* 选中时的背景颜色 */
+  border-color: #000; /* 选中时的边框颜色 */
+}
+

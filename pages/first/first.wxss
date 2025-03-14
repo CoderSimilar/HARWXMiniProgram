@@ -1,0 +1,67 @@
+/* pages/first/first.wxss */
+
+/* Scroll View */
+scroll-view {
+  display: block;
+  height: 100%;
+  background-color: #f4f4f4; /* 背景色 */
+  padding: 20px;
+}
+
+/* Box 容器 */
+.box {
+  margin-bottom: 20rpx;
+}
+
+/* 顶部栏 */
+.cu-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #fff;
+  padding: 15rpx;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* 项目选择标题 */
+.sub-title {
+  display: flex;
+  flex-direction: column;
+}
+
+/* 背景条 */
+.bg-orange {
+  height: 4px;
+  background-color: #f87b1a; /* 橙色 */
+  margin-top: 8px;
+}
+
+/* 按钮 */
+button[type="primary"] {
+  width: 80%; /* 设置按钮宽度为 80% */
+  max-width: 300rpx; /* 设置按钮最大宽度为 300rpx */
+  padding: 16rpx;
+  font-size: 18px;
+  background-color: #f87b1a; /* 橙色背景 */
+  color: white;
+  border-radius: 8px;
+  margin-bottom: 40rpx;
+  border: none;
+  display: block;
+  margin-left: auto; /* 使按钮居中 */
+  margin-right: auto;
+}
+
+
+/* 按钮 (未激活状态) */
+button[type="primary"]:not([plain]) {
+  background-color: #f87b1a;
+  color: white;
+}
+
+/* 按钮文本 */
+button[type="primary"] .text {
+  font-size: 18px;
+  font-weight: bold;
+}

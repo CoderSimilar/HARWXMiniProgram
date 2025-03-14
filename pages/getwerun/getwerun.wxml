@@ -1,0 +1,84 @@
+<view class="container">
+  <button bindtap="toggleWerunTimer" class="button werun-button">
+    {{werunTimer ? '停止定时获取微信运动数据' : '定时获取微信运动数据'}}
+  </button>
+  
+  <button bindtap="getStepsNow" class="button werun-button">
+    手动获取微信运动数据
+  </button>
+  
+  <button bindtap="toggleAccTracking" class="button acc-button">
+    {{accTracking ? '停止无感知获取步数' : '无感知获取步数'}}
+  </button>
+  
+  <!-- 当前采集频率状态提示 -->
+  <view class="frequency-status" wx:if="{{accTracking}}">
+    当前采集频率: {{intervalOptions[selectedIntervalIndex].name}} ({{intervalOptions[selectedIntervalIndex].desc}})
+  </view>
+  
+  <!-- 采集频率设置 - 仅在正在采集数据时显示 -->
+  <view class="frequency-container" wx:if="{{accTracking}}">
+    <view class="frequency-title">传感器采集频率设置：</view>
+    <view class="frequency-options">
+      <block wx:for="{{intervalOptions}}" wx:key="index">
+        <view 
+          class="frequency-option {{selectedIntervalIndex === index ? 'selected' : ''}}" 
+          bindtap="setAccelerometerInterval" 
+          data-index="{{index}}"
+        >
+          {{item.name}}
+          <view class="frequency-desc">{{item.desc}}</view>
+        </view>
+      </block>
+    </view>
+  </view>
+  
+  <button bindtap="weakNetGetSteps" class="button">
+    {{weakNetSimulationActive ? '停止弱网环境测试' : '弱网环境获取步数测试'}}
+  </button>
+  
+  <!-- 弱网模拟按钮 -->
+  <button bindtap="simulateNetworkDisconnect" class="button weak-net-button" wx:if="{{weakNetSimulationActive}}">
+    {{weakNetworkDisconnected ? '模拟网络恢复' : '模拟断开网络'}}
+  </button>
+  
+  <button bindtap="stopNetworkSimulation" class="button" wx:if="{{networkSimulationActive}}">
+    停止网络模拟
+  </button>
+  
+  <button bindtap="uploadCachedData" class="button" wx:if="{{!networkAvailable}}">
+    尝试上传缓存数据
+  </button>
+  
+  <view class="network-status {{networkAvailable ? 'connected' : 'disconnected'}}">
+    网络状态: {{networkAvailable ? '已连接' : '已断开'}}
+  </view>
+  
+  <view wx:if="{{stepInfoList.length > 0}}">
+    <view class="table">
+      <view class="table-row table-header">
+        <view class="table-cell">日期</view>
+        <view class="table-cell">步数</view>
+        <view class="table-cell">数据来源</view>
+        <view class="table-cell">采集频率</view>
+      </view>
+      <view wx:for="{{stepInfoList}}" wx:key="index" class="table-row">
+        <view class="table-cell">{{item.timestamp}}</view>
+        <view class="table-cell">{{item.step}}</view>
+        <view class="table-cell">
+          <view class="data-source {{item.source === 'werun' ? 'werun-source' : 'acc-source'}}">
+            {{item.source === 'werun' ? '微信运动' : '传感器'}}
+            <text wx:if="{{item.note}}">({{item.note}})</text>
+          </view>
+        </view>
+        <view class="table-cell">
+          <text wx:if="{{item.source === 'accelerometer'}}">{{item.interval}}</text>
+          <text wx:else>-</text>
+        </view>
+      </view>
+    </view>
+  </view>
+  <view wx:else>
+    <view class="no-data">没有步数数据</view>
+  </view>
+</view>

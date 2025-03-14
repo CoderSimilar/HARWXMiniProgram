@@ -1,0 +1,178 @@
+.container {
+  padding: 20rpx;
+  background-color: #f7f7f7;
+}
+
+.button {
+  display: block;
+  width: 100%;
+  padding: 15rpx;
+  margin-bottom: 20rpx;
+  background-color: #007AFF;
+  color: #fff;
+  text-align: center;
+  border-radius: 5rpx;
+  font-size: 30rpx;
+}
+
+/* 采集频率状态提示样式 */
+.frequency-status {
+  padding: 12rpx;
+  margin-bottom: 20rpx;
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  text-align: center;
+  border-radius: 5rpx;
+  font-size: 28rpx;
+  border: 1px solid #c8e6c9;
+}
+
+/* 采集频率设置样式 */
+.frequency-container {
+  margin-bottom: 20rpx;
+  background-color: #fff;
+  border-radius: 5rpx;
+  padding: 15rpx;
+  box-shadow: 0 1rpx 3rpx rgba(0,0,0,0.1);
+}
+
+.frequency-title {
+  font-size: 28rpx;
+  color: #333;
+  margin-bottom: 10rpx;
+  font-weight: bold;
+}
+
+.frequency-options {
+  display: flex;
+  justify-content: space-between;
+}
+
+.frequency-option {
+  flex: 1;
+  text-align: center;
+  padding: 12rpx 0;
+  font-size: 26rpx;
+  color: #666;
+  background-color: #f0f0f0;
+  border-radius: 4rpx;
+  margin: 0 5rpx;
+  transition: all 0.3s;
+}
+
+.frequency-desc {
+  font-size: 22rpx;
+  color: #999;
+  margin-top: 4rpx;
+}
+
+.frequency-option.selected {
+  background-color: #007AFF;
+  color: #fff;
+  font-weight: bold;
+}
+
+.frequency-option.selected .frequency-desc {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.table {
+  display: table;
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20rpx;
+}
+
+.table-row {
+  display: table-row;
+}
+
+.table-cell {
+  display: table-cell;
+  padding: 10rpx;
+  border: 1rpx solid #ddd;
+  text-align: center;
+  font-size: 28rpx;
+}
+
+.table-header {
+  background-color: #f0f0f0;
+  font-weight: bold;
+}
+
+.network-status {
+  padding: 10rpx;
+  margin: 10rpx 0 20rpx;
+  text-align: center;
+  border-radius: 5rpx;
+  font-size: 28rpx;
+}
+
+.connected {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  border: 1px solid #c8e6c9;
+}
+
+.disconnected {
+  background-color: #ffebee;
+  color: #c62828;
+  border: 1px solid #ffcdd2;
+}
+
+.no-data {
+  text-align: center;
+  padding: 30rpx;
+  color: #999;
+  font-size: 30rpx;
+}
+
+.data-source {
+  padding: 4rpx 8rpx;
+  border-radius: 4rpx;
+  font-size: 24rpx;
+  display: inline-block;
+}
+
+.werun-source {
+  background-color: #e3f2fd;
+  color: #1976d2;
+  border: 1px solid #bbdefb;
+}
+
+.acc-source {
+  background-color: #fff3e0;
+  color: #e65100;
+  border: 1px solid #ffe0b2;
+}
+
+.werun-button {
+  background-color: #1976d2;
+}
+
+.acc-button {
+  background-color: #008ae6;
+}
+
+/* 弱网模式相关样式 */
+.weak-net-button {
+  background-color: #9c27b0;
+}
+
+.weak-net-status {
+  padding: 10rpx;
+  margin: 10rpx 0 20rpx;
+  text-align: center;
+  border-radius: 5rpx;
+  font-size: 28rpx;
+  background-color: #f3e5f5;
+  color: #6a1b9a;
+  border: 1px solid #e1bee7;
+}
+
+/* 缓存数据标记样式 */
+.data-source text {
+  font-size: 22rpx;
+  margin-left: 4rpx;
+  color: #757575;
+}
