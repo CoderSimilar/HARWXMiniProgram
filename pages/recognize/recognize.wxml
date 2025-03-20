@@ -9,10 +9,19 @@
   </view>
   <view class="contain">
     <view class="sensor-item acc">
-      <view wx:if="{{isReading || displayValue == 30}}" style="margin-top: 20px;display: flex;justify-content: space-between;">
+      <view wx:if="{{isReading}}" style="margin-top: 20px;display: flex;justify-content: space-between;">
         <progress percent="{{value}}" style="width:90%" />
         <view wx:if="{{displayValue}}">{{displayValue}}s</view>
       </view>
+    </view>
+  </view>
+
+  <!-- 添加步数显示 -->
+  <view class="step-counter bg-white">
+    <view class="step-count-container">
+      <view class="step-icon">👣</view>
+      <view class="step-count">{{stepCount}}</view>
+      <view class="step-label">步</view>
     </view>
   </view>
 
@@ -66,10 +75,33 @@
     <view class="chart-container">
       <canvas canvas-id="timeSeriesCanvas" class="time-series-chart" style="width: {{timeSeriesCanvasWidth}}px; height: {{timeSeriesCanvasHeight}}px;"></canvas>
     </view>
+    
+    <!-- 添加步数图表显示 -->
+    <view class="chart-container">
+      <view class="chart-title">步数检测图表</view>
+      <canvas canvas-id="stepChart" class="step-chart" style="width: {{canvasWidth}}px; height: {{canvasHeight}}px;"></canvas>
+      <view class="chart-note">
+        <text>绿线: 加速度模值变化</text>
+        <text>红点: 检测到的步数峰值</text>
+      </view>
+    </view>
   </view>
+  
+  <!-- 修改按钮区域，添加开始和结束按钮 -->
   <view style="margin-top:30rpx">
-    <button class="aaa" bindtap="clickVerify">{{literal}}</button>
-    <button class="aaa" bindtap="Reset">再来一次</button>
+    <!-- 判断当前状态显示不同的按钮 -->
+    <block wx:if="{{!isReading && literal == '开始检测'}}">
+      <button class="aaa start-btn" bindtap="startActionRecognition">开始动作识别</button>
+    </block>
+    
+    <block wx:if="{{isReading}}">
+      <button class="aaa stop-btn" bindtap="stopActionRecognition">结束动作识别</button>
+    </block>
+    
+    <block wx:if="{{!isReading && literal == '显示详细信息'}}">
+      <button class="aaa" bindtap="clickVerify">显示详细信息</button>
+      <button class="aaa" bindtap="Reset">再来一次</button>
+    </block>
   </view>
 
 </scroll-view>

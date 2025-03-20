@@ -4,7 +4,8 @@
     "pages/new_collect/collect",
     "pages/getwerun/getwerun",
     "pages/recognize/recognize",
-    "pages/getlocation/getlocation"
+    "pages/getlocation/getlocation",
+    "pages/integrated/integrated"
   ],
   "window": {
     "backgroundColor": "#f9f9f9",

@@ -1,26 +1,33 @@
 // pages/first/first.js
 Page({
-  tocollect:function(){
+
+  tocollect: function () {
     wx.navigateTo({
       url: '/pages/new_collect/collect',
     })
   },
 
-  torecognize:function(){
+  torecognize: function () {
     wx.navigateTo({
       url: '/pages/recognize/recognize',
     })
   },
 
-  getwerun:function(){
+  getwerun: function () {
     wx.navigateTo({
       url: '/pages/getwerun/getwerun',
     })
   },
-  getlocation:function(){
+
+  getlocation: function () {
     wx.navigateTo({
       url: '/pages/getlocation/getlocation',
     })
   },
 
+  integrated: function () {
+    wx.navigateTo({
+      url: '/pages/integrated/integrated',
+    })
+  } 
 })

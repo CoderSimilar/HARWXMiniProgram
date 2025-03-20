@@ -78,8 +78,79 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.pie-chart, .time-series-chart {
+.pie-chart, .time-series-chart, .step-chart {
   width: 100%;
   height: 300px;
   margin: 0 auto;
+}
+
+/* 新增开始/结束按钮样式 */
+.start-btn {
+  background-color: #07c160 !important;
+  color: #fff !important;
+}
+
+.stop-btn {
+  background-color: #e64340 !important;
+  color: #fff !important;
+}
+
+/* 所有按钮通用样式增强 */
+.aaa {
+  margin-bottom: 20rpx !important;
+  border-radius: 10rpx !important;
+  font-size: 32rpx !important;
+  padding: 20rpx 0 !important;
+}
+
+/* 步数计数器样式 */
+.step-counter {
+  padding: 20rpx;
+  margin: 20rpx 0;
+  border-radius: 10rpx;
+  box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.1);
+}
+
+.step-count-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.step-icon {
+  font-size: 48rpx;
+  margin-right: 20rpx;
+}
+
+.step-count {
+  font-size: 64rpx;
+  font-weight: bold;
+  color: #07c160;
+}
+
+.step-label {
+  font-size: 32rpx;
+  margin-left: 10rpx;
+  color: #888;
+}
+
+/* 图表标题和注释 */
+.chart-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20rpx;
+  text-align: center;
+}
+
+.chart-note {
+  display: flex;
+  flex-direction: column;
+  font-size: 24rpx;
+  color: #666;
+  margin-top: 20rpx;
+}
+
+.chart-note text {
+  margin: 5rpx 0;
 }
