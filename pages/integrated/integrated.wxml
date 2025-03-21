@@ -14,7 +14,7 @@
         id="map" 
         latitude="{{latitude}}" 
         longitude="{{longitude}}" 
-        scale="{{14}}" 
+        scale="{{scale}}" 
         show-location 
         polyline="{{polyline}}"
         markers="{{markers}}"
@@ -96,7 +96,7 @@
   </view>
 
   <!-- 活动数据显示部分 -->
-  <view class="section" wx:if="{{tracking && isReading}}">
+  <view class="section" wx:if="{{tracking}}">
     <view class="section-title">活动数据</view>
     
     <!-- 步数显示 -->
@@ -109,7 +109,7 @@
     </view>
     
     <!-- 传感器数据显示 -->
-    <view class="sensor-data">
+    <view class="sensor-data" wx:if="{{isReading}}">
       <view class="sensor-title">实时传感器数据</view>
       
       <view class="sensor-row">
