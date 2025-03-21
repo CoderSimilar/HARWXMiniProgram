@@ -103,6 +103,8 @@ Page({
     dataSaveIntervalId: null, // 数据保存定时器ID
     syncIntervalId: null,     // 数据同步定时器ID
     stepRefreshIntervalId: null, // 步数刷新定时器ID
+    lastSyncedLocationIndex: 0, // 上次同步的位置数据索引
+    lastSyncedStepsIndex: 0,    // 上次同步的步数数据索引
   },
   
   // 获取位置并显示地图
@@ -201,8 +203,9 @@ Page({
         outOfAreaCount: 0, // 重置超出区域计数
         cachedLocationData: [], // 重置缓存数据
         cachedStepsData: [],
-        // 不重置步数计数
         lastMinuteStepCount: this.data.stepCount, // 设置为当前总步数
+        lastSyncedLocationIndex: 0, // 重置同步索引
+        lastSyncedStepsIndex: 0    // 重置同步索引
       });
 
       // 加载之前缓存的数据
@@ -374,7 +377,7 @@ Page({
     }
   },
   
-  // 同步数据到服务器
+  // 同步数据到服务器 - 只发送新增数据
   syncDataWithServer: function() {
     if (!this.data.tracking || !this.data.isOnline) return;
     
@@ -385,13 +388,15 @@ Page({
     
     console.log('尝试同步数据到服务器...');
     
-    // 这里实现与服务器的数据同步逻辑
-    // 示例：发送位置数据
-    if (this.data.cachedLocationData.length > 0) {
+    // 同步位置数据 - 只发送新增部分
+    const locationData = this.data.cachedLocationData;
+    const newLocationData = locationData.slice(this.data.lastSyncedLocationIndex);
+    
+    if (newLocationData.length > 0) {
       wx.request({
         url: `${API_BASE_URL}/sync_location`,
         data: {
-          data: JSON.stringify(this.data.cachedLocationData)
+          data: JSON.stringify(newLocationData)
         },
         method: "POST",
         header: {
@@ -399,10 +404,12 @@ Page({
           'chartset': 'utf-8'
         },
         success: res => {
-          console.log('位置数据同步成功:', res.data);
+          console.log('新增位置数据同步成功:', res.data, `(${newLocationData.length}条记录)`);
           
-          // 同步成功后可以清空已同步的数据
-          // this.setData({ cachedLocationData: [] });
+          // 更新已同步的位置数据索引
+          this.setData({ 
+            lastSyncedLocationIndex: locationData.length 
+          });
         },
         fail: err => {
           console.error('位置数据同步失败:', err);
@@ -413,12 +420,15 @@ Page({
       });
     }
     
-    // 示例：发送步数数据
-    if (this.data.cachedStepsData.length > 0) {
+    // 同步步数数据 - 只发送新增部分
+    const stepsData = this.data.cachedStepsData;
+    const newStepsData = stepsData.slice(this.data.lastSyncedStepsIndex);
+    
+    if (newStepsData.length > 0) {
       wx.request({
         url: `${API_BASE_URL}/sync_steps`,
         data: {
-          data: JSON.stringify(this.data.cachedStepsData)
+          data: JSON.stringify(newStepsData)
         },
         method: "POST",
         header: {
@@ -426,10 +436,12 @@ Page({
           'chartset': 'utf-8'
         },
         success: res => {
-          console.log('步数数据同步成功:', res.data);
+          console.log('新增步数数据同步成功:', res.data, `(${newStepsData.length}条记录)`);
           
-          // 同步成功后可以清空已同步的数据
-          // this.setData({ cachedStepsData: [] });
+          // 更新已同步的步数数据索引
+          this.setData({ 
+            lastSyncedStepsIndex: stepsData.length 
+          });
         },
         fail: err => {
           console.error('步数数据同步失败:', err);
@@ -934,6 +946,19 @@ Page({
     
     // 清理计步相关数据
     if (accNormValues.length > MAX_STEP_DATA_POINTS) {
+      // 计算要清理的数据量
+      const removedCount = accNormValues.length - MAX_STEP_DATA_POINTS;
+      
+      // 如果有已同步的数据被清理，调整同步索引
+      if (this.data.lastSyncedStepsIndex > removedCount) {
+        this.setData({
+          lastSyncedStepsIndex: this.data.lastSyncedStepsIndex - removedCount
+        });
+      } else {
+        // 如果所有已同步数据都被清理了，则重置索引
+        this.setData({ lastSyncedStepsIndex: 0 });
+      }
+      
       dataUpdate.accNormValues = accNormValues.slice(-MAX_STEP_DATA_POINTS);
       dataUpdate.accTimestamps = accTimestamps.slice(-MAX_STEP_DATA_POINTS);
       
@@ -1235,7 +1260,9 @@ Page({
         }],
         cachedLocationData: [],
         cachedStepsData: [],
-        lastMinuteStepCount: resetStepCount ? 0 : this.data.stepCount
+        lastMinuteStepCount: resetStepCount ? 0 : this.data.stepCount,
+        lastSyncedLocationIndex: 0, // 重置同步索引
+        lastSyncedStepsIndex: 0     // 重置同步索引
       };
       
       // 只有在需要重置步数时才更新stepCount
