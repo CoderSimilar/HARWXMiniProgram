@@ -309,3 +309,60 @@ button[disabled] {
   margin-left: 10rpx;
   color: #6d806e;
 }
+
+/* 精准电子围栏记录面板 */
+.fence-recording-panel {
+  background-color: #f8f8f8;
+  padding: 20rpx;
+  border-radius: 10rpx;
+  margin: 20rpx 0;
+  box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.1);
+  border: 2rpx solid #FF6A00;
+}
+
+.fence-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #FF6A00;
+  margin-bottom: 15rpx;
+}
+
+.fence-info {
+  font-size: 28rpx;
+  color: #666;
+  margin-bottom: 10rpx;
+}
+
+.fence-tips {
+  font-size: 24rpx;
+  color: #999;
+  margin-bottom: 20rpx;
+}
+
+.fence-buffer-control {
+  margin: 20rpx 0;
+}
+
+.fence-buffer-control text {
+  font-size: 26rpx;
+  color: #666;
+}
+
+/* 精准围栏信息样式 */
+.fence-badge {
+  background-color: #FF6A00;
+  color: white;
+  padding: 4rpx 12rpx;
+  border-radius: 8rpx;
+  font-size: 28rpx;
+  font-weight: bold;
+  margin-bottom: 10rpx;
+}
+
+.fence-details {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  font-size: 24rpx;
+  color: #666;
+}

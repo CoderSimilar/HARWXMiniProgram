@@ -44,4 +44,14 @@ export const STORAGE_KEY_STEPS = 'cached_steps_data'
 export const MAX_CACHE_ITEMS = 1000
 export const STEP_STATS_INTERVAL = 60000
 export const SYNC_INTERVAL = 60000
-export const STEP_REFRESH_INTERVAL = 60000 
+export const STEP_REFRESH_INTERVAL = 60000
+
+// 精准电子围栏相关常量
+export const FENCE_COLOR = '#FF6A00DD'
+export const FENCE_FILL_COLOR = '#FF6A0033'
+export const FENCE_STROKE_WIDTH = 3
+export const FENCE_WIDTH = 4
+export const DEFAULT_FENCE_BUFFER = 15 // 默认围栏缓冲区大小（米）
+export const FENCE_RECORDING_INTERVAL = 3 * 1000 // 围栏记录点的时间间隔
+export const FENCE_MARKER_SIZE = 8 // 围栏点位标记大小
+export const FENCE_ORIGINAL_COLOR = '#0066FFDD' // 原始路径颜色
