@@ -481,41 +481,49 @@ const LocationManager = {
   checkIfOutOfPreciseFence: function(page, latitude, longitude) {
     if (!page.data.hasSetPreciseFence || !page.data.preciseFence) return false;
     
+    // 首先确保有效的 bufferedPoints
+    const polygon = page.data.preciseFence.bufferedPoints || [];
+    if (!polygon || polygon.length < 3) return false;
+    
     const point = { latitude, longitude };
-    const polygon = page.data.preciseFence.bufferedPoints;
     
-    const isInside = PolygonFenceService.isPointInPolygon(point, polygon);
-    const isOutOfArea = !isInside;
-    const currentTime = new Date().getTime();
-    
-    if (isOutOfArea) {
-      // 增加超出区域计数
-      const newCount = page.data.outOfAreaCount + 1;
-      page.setData({ outOfAreaCount: newCount });
+    try {
+      const isInside = PolygonFenceService.isPointInPolygon(point, polygon);
+      const isOutOfArea = !isInside;
+      const currentTime = new Date().getTime();
       
-      // 检查是否达到警告阈值 & 是否超过冷却时间
-      if (newCount >= Constants.OUT_OF_AREA_THRESHOLD && 
-          currentTime - page.data.lastWarningTime > Constants.WARNING_COOLDOWN) {
-        // 发出警告
-        wx.showModal({
-          title: '超出活动范围警告',
-          content: `您已超出设定的精准活动范围${newCount}次，请注意安全！`,
-          showCancel: false,
-          success: () => {
-            // 更新最后警告时间
-            page.setData({ lastWarningTime: currentTime });
-          }
-        });
+      if (isOutOfArea) {
+        // 增加超出区域计数
+        const newCount = page.data.outOfAreaCount + 1;
+        page.setData({ outOfAreaCount: newCount });
+        
+        // 检查是否达到警告阈值 & 是否超过冷却时间
+        if (newCount >= Constants.OUT_OF_AREA_THRESHOLD && 
+            currentTime - page.data.lastWarningTime > Constants.WARNING_COOLDOWN) {
+          // 发出警告
+          wx.showModal({
+            title: '超出活动范围警告',
+            content: `您已超出设定的精准活动范围${newCount}次，请注意安全！`,
+            showCancel: false,
+            success: () => {
+              // 更新最后警告时间
+              page.setData({ lastWarningTime: currentTime });
+            }
+          });
+        }
+        
+        console.log('超出精准活动范围');
+        return true;
+      } else {
+        // 如果返回区域内，重置计数
+        if (page.data.outOfAreaCount > 0) {
+          page.setData({ outOfAreaCount: 0 });
+          console.log('已返回精准活动范围内');
+        }
+        return false;
       }
-      
-      console.log('超出精准活动范围');
-      return true;
-    } else {
-      // 如果返回区域内，重置计数
-      if (page.data.outOfAreaCount > 0) {
-        page.setData({ outOfAreaCount: 0 });
-        console.log('已返回精准活动范围内');
-      }
+    } catch (error) {
+      console.error('检查是否超出精准围栏时出错:', error);
       return false;
     }
   }

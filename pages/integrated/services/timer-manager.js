@@ -81,6 +81,30 @@ const TimerManager = {
     });
     
     console.log('所有定时器已停止');
+  },
+
+  // 开始定期保存缓存数据的定时器
+  startDataSaveTimer: function(page) {
+    // 清除已有定时器
+    if (page.timers.dataSave) {
+      clearInterval(page.timers.dataSave);
+    }
+    
+    // 设置新定时器
+    page.timers.dataSave = setInterval(() => {
+      DataManager.saveCacheData(page);
+    }, Constants.DATA_SAVE_INTERVAL);
+    
+    console.log('数据缓存定时器已启动，间隔:', Constants.DATA_SAVE_INTERVAL, 'ms');
+  },
+
+  // 停止定期保存缓存数据的定时器
+  stopDataSaveTimer: function(page) {
+    if (page.timers.dataSave) {
+      clearInterval(page.timers.dataSave);
+      page.timers.dataSave = null;
+      console.log('数据缓存定时器已停止');
+    }
   }
 };
 

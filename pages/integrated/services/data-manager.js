@@ -42,79 +42,67 @@ const DataManager = {
   
   // 加载缓存数据
   loadCachedData: function(page) {
+    console.log('开始加载缓存数据');
+    
+    // 加载位置缓存
     try {
-      const { locationData, stepsData } = StorageService.loadCachedData();
-      
-      if (locationData.length > 0 || stepsData.length > 0) {
-        // 准备更新数据
-        let updateData = {
-          cachedLocationData: locationData || [],
-          cachedStepsData: stepsData || []
-        };
-        
-        // 如果有位置数据，初始化地图标记和轨迹
-        if (locationData.length > 0) {
-          const markers = [];
-          const polylinePoints = [];
-          
-          locationData.forEach((point, index) => {
-            // 添加地图标记
-            markers.push({
-              id: index,
-              latitude: point.latitude,
-              longitude: point.longitude,
-              width: Constants.MARKER_SIZE,
-              height: Constants.MARKER_SIZE
+      wx.getStorage({
+        key: Constants.STORAGE_KEY_LOCATION,
+        success(res) {
+          if (res.data && Array.isArray(res.data)) {
+            page.setData({
+              cachedLocationData: res.data
             });
-            
-            // 添加轨迹点
-            polylinePoints.push({
-              latitude: point.latitude,
-              longitude: point.longitude
+            console.log('加载位置缓存成功，条数:', res.data.length);
+          } else {
+            console.log('位置缓存为空或格式不正确');
+            page.setData({
+              cachedLocationData: []
             });
+          }
+        },
+        fail(error) {
+          console.log('加载位置缓存失败:', error);
+          page.setData({
+            cachedLocationData: []
           });
-          
-          // 更新并初始化地图数据
-          updateData.markers = markers;
-          updateData.polyline = [{
-            points: polylinePoints,
-            color: Constants.POLYLINE_COLOR,
-            width: Constants.POLYLINE_WIDTH,
-            dottedLine: false
-          }];
-          
-          // 设置地图中心点为最后一个位置点
-          const lastPoint = locationData[locationData.length - 1];
-          updateData.latitude = lastPoint.latitude;
-          updateData.longitude = lastPoint.longitude;
         }
-        
-        // 更新数据
-        page.setData(updateData);
-        
-        console.log(`已加载缓存数据: ${locationData.length}条位置记录, ${stepsData.length}条步数记录`);
-      } else {
-        // 如果没有缓存数据，初始化空轨迹
-        page.setData({
-          polyline: [{
-            points: [],
-            color: Constants.POLYLINE_COLOR,
-            width: Constants.POLYLINE_WIDTH,
-            dottedLine: false
-          }]
-        });
-      }
+      });
     } catch (error) {
-      console.error('加载缓存数据失败:', error);
-      
-      // 出错时也要初始化空轨迹
+      console.error('加载位置缓存过程中发生错误:', error);
       page.setData({
-        polyline: [{
-          points: [],
-          color: Constants.POLYLINE_COLOR,
-          width: Constants.POLYLINE_WIDTH,
-          dottedLine: false
-        }]
+        cachedLocationData: []
+      });
+    }
+    
+    // 加载步数缓存
+    try {
+      wx.getStorage({
+        key: Constants.STORAGE_KEY_STEPS,
+        success(res) {
+          if (res.data && Array.isArray(res.data)) {
+            page.setData({
+              cachedStepsData: res.data
+            });
+            console.log('加载步数缓存成功，条数:', res.data.length);
+          } else {
+            console.log('步数缓存为空或格式不正确');
+            page.setData({
+              cachedStepsData: []
+            });
+          }
+        },
+        fail(error) {
+          console.log('加载步数缓存失败:', error);
+          page.setData({
+            cachedStepsData: []
+          });
+        }
+      });
+    } catch (error) {
+      console.error('加载步数缓存过程中发生错误:', error);
+      page.setData({
+        cachedStepsData: []
       });
     }
   },
@@ -271,6 +259,52 @@ const DataManager = {
     });
     
     console.log('所有缓存数据已清除');
+  },
+  
+  // 保存缓存数据到本地存储
+  saveCacheData: function(page) {
+    console.log('保存缓存数据到本地存储');
+    
+    // 保存位置数据
+    try {
+      if (page.data.cachedLocationData && Array.isArray(page.data.cachedLocationData) && page.data.cachedLocationData.length > 0) {
+        wx.setStorage({
+          key: Constants.STORAGE_KEY_LOCATION,
+          data: page.data.cachedLocationData,
+          success: function() {
+            console.log('位置数据缓存成功，条数:', page.data.cachedLocationData.length);
+          },
+          fail: function(error) {
+            console.error('位置数据缓存失败:', error);
+          }
+        });
+      }
+    } catch (error) {
+      console.error('保存位置数据时出错:', error);
+    }
+    
+    // 保存步数数据
+    try {
+      if (page.data.cachedStepsData && Array.isArray(page.data.cachedStepsData) && page.data.cachedStepsData.length > 0) {
+        wx.setStorage({
+          key: Constants.STORAGE_KEY_STEPS,
+          data: page.data.cachedStepsData,
+          success: function() {
+            console.log('步数数据缓存成功，条数:', page.data.cachedStepsData.length);
+          },
+          fail: function(error) {
+            console.error('步数数据缓存失败:', error);
+          }
+        });
+      }
+    } catch (error) {
+      console.error('保存步数数据时出错:', error);
+    }
+    
+    // 更新最后保存时间
+    page.setData({
+      lastSaveTime: new Date().getTime()
+    });
   }
 };
 

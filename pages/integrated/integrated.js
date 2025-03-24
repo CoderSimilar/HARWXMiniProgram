@@ -125,7 +125,7 @@ Page({
     // 如果正在跟踪，先同步最终数据
     if (this.data.tracking) {
       // 保存缓存数据
-      DataManager.saveCachedData(this);
+      DataManager.saveCacheData(this);
       
       // 尝试同步
       if (this.data.isOnline) {
@@ -133,7 +133,12 @@ Page({
       }
       
       // 停止所有传感器和定时器
-      this.stopTrackingAndSensors();
+      this.stopAllSensorsAndTimers();
+      
+      // 更新跟踪状态
+      this.setData({
+        tracking: false
+      });
       
       // 清空缓存
       this.resetTrackingData();
@@ -200,25 +205,26 @@ Page({
   },
   
   // 停止跟踪
-  stopTracking: function() {
+  stopTracking: function(resetData = true) {
     // 停止所有传感器和定时器
-    SensorManager.stopAllSensors();
-    TimerManager.stopAllTimers(this);
+    this.stopAllSensorsAndTimers();
     
-    // 保存数据并尝试最终同步
-    DataManager.saveDataToStorage(this);
+    // 在停止之前保存当前缓存数据
+    DataManager.saveCacheData(this);
     
-    // 尝试同步数据到服务器
-    if (this.data.isOnline) {
-      DataManager.syncDataWithServer(this, true);
+    // 更新状态
+    this.setData({
+      tracking: false
+    });
+    
+    if (resetData) {
+      this.resetTrackingData();
     }
     
-    // 清空内存中的缓存数据
-    this.resetTrackingData();
-    
-    this.setData({
-      tracking: false,
-      isReading: false
+    wx.showToast({
+      title: '监测已停止',
+      icon: 'success',
+      duration: Constants.TOAST_DURATION
     });
   },
   
@@ -439,7 +445,7 @@ Page({
     });
   },
   
-  // 添加一个新方法用于重置所有缓存和状态
+  // 添加一个方法用于重置所有缓存和状态
   resetTrackingData: function() {
     // 初始化空轨迹和标记
     this.setData({
@@ -533,5 +539,21 @@ Page({
         markers: this.data.markers
       });
     }
+  },
+  
+  // 停止所有传感器和定时器
+  stopAllSensorsAndTimers: function() {
+    // 停止所有传感器
+    SensorManager.stopAllSensors();
+    
+    // 停止所有定时器
+    TimerManager.stopAllTimers(this);
+    
+    // 设置状态
+    this.setData({
+      isReading: false
+    });
+    
+    console.log('所有传感器和定时器已停止');
   }
 });
