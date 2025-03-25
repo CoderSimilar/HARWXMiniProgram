@@ -109,25 +109,12 @@ const DataManager = {
   
   // 保存数据到本地存储
   saveDataToStorage: function(page) {
-    if (!page.data.tracking) return;
+    if (!page.data.tracking) return false;
     
     const locationData = page.data.cachedLocationData || [];
     const stepsData = page.data.cachedStepsData || [];
     
-    if (locationData.length === 0 && stepsData.length === 0) {
-      console.log('无数据需要保存到本地存储');
-      return false;
-    }
-    
-    const success = StorageService.saveDataToStorage(locationData, stepsData);
-    
-    if (success) {
-      console.log(`数据已保存到本地存储: ${locationData.length}条位置记录, ${stepsData.length}条步数记录`);
-    } else {
-      console.error('保存数据到本地存储失败');
-    }
-    
-    return success;
+    return StorageService.saveDataToStorage(locationData, stepsData);
   },
   
   // 同步数据到服务器
@@ -264,47 +251,7 @@ const DataManager = {
   // 保存缓存数据到本地存储
   saveCacheData: function(page) {
     console.log('保存缓存数据到本地存储');
-    
-    // 保存位置数据
-    try {
-      if (page.data.cachedLocationData && Array.isArray(page.data.cachedLocationData) && page.data.cachedLocationData.length > 0) {
-        wx.setStorage({
-          key: Constants.STORAGE_KEY_LOCATION,
-          data: page.data.cachedLocationData,
-          success: function() {
-            console.log('位置数据缓存成功，条数:', page.data.cachedLocationData.length);
-          },
-          fail: function(error) {
-            console.error('位置数据缓存失败:', error);
-          }
-        });
-      }
-    } catch (error) {
-      console.error('保存位置数据时出错:', error);
-    }
-    
-    // 保存步数数据
-    try {
-      if (page.data.cachedStepsData && Array.isArray(page.data.cachedStepsData) && page.data.cachedStepsData.length > 0) {
-        wx.setStorage({
-          key: Constants.STORAGE_KEY_STEPS,
-          data: page.data.cachedStepsData,
-          success: function() {
-            console.log('步数数据缓存成功，条数:', page.data.cachedStepsData.length);
-          },
-          fail: function(error) {
-            console.error('步数数据缓存失败:', error);
-          }
-        });
-      }
-    } catch (error) {
-      console.error('保存步数数据时出错:', error);
-    }
-    
-    // 更新最后保存时间
-    page.setData({
-      lastSaveTime: new Date().getTime()
-    });
+    return this.saveDataToStorage(page);
   }
 };
 

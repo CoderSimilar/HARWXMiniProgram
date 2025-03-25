@@ -32,7 +32,7 @@ export const HEADERS = {
 // 步数统计相关常量
 export const STEP_UPDATE_INTERVAL = 1000
 export const SAMPLE_RATE = 50
-export const PEAK_THRESHOLD = 1.5
+export const PEAK_THRESHOLD = 1.2
 export const MIN_PEAK_DISTANCE_S = 0.25
 export const MOVING_AVERAGE_WINDOW = 5
 

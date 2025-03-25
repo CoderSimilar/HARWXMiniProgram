@@ -10,7 +10,8 @@ App({
       fail() {
         console.log("fail connect to server")
       },
-    })
+    }),
+    wx.authorize({scope: 'scope.userLocationBackground'})
   },
   globalData: {},
 })

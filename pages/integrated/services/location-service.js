@@ -3,7 +3,7 @@ import * as Constants from '../config/constants.js'
 // 获取当前位置
 export function getCurrentLocation() {
   return new Promise((resolve, reject) => {
-    wx.getLocation({
+    wx.startLocationUpdateBackground()({
       type: Constants.LOCATION_TYPE,
       success: res => resolve(res),
       fail: err => reject(err)

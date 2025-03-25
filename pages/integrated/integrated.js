@@ -61,26 +61,21 @@ Page({
     originalPathPolyline: [] // 原始路径线条
   },
   
-  // 定时器管理对象
-  timers: {
-    location: null,
-    stepDetection: null,
-    stepStats: null,
-    dataSave: null,
-    sync: null,
-    actionSubmit: null,
-    cleanup: null,
-    networkCheck: null
-  },
-  
-  // 传感器数据对象 - 在相应模块中初始化
-  stepDetector: null,
-  actionData: null,
-  
-  // ========= 生命周期函数 =========
-  
   // 页面加载
   onLoad: function() {
+    // 在这里初始化 timers 对象
+    this.timers = {
+      location: null,
+      stepDetection: null,
+      stepStats: null,
+      dataSave: null,
+      sync: null,
+      actionSubmit: null,
+      cleanup: null,
+      networkCheck: null,
+      fenceRecording: null // 添加围栏记录定时器
+    };
+    
     // 初始化空轨迹
     this.setData({
       action_counts: {},
@@ -161,15 +156,15 @@ Page({
       this.stopTracking();
       
       // 直接删除本地存储的缓存键
-      wx.removeStorage({
-        key: Constants.STORAGE_KEY_LOCATION,
-        success: () => console.log('位置缓存已清除')
-      });
+      // wx.removeStorage({
+      //   key: Constants.STORAGE_KEY_LOCATION,
+      //   success: () => console.log('位置缓存已清除')
+      // });
       
-      wx.removeStorage({
-        key: Constants.STORAGE_KEY_STEPS,
-        success: () => console.log('步数缓存已清除')
-      });
+      // wx.removeStorage({
+      //   key: Constants.STORAGE_KEY_STEPS,
+      //   success: () => console.log('步数缓存已清除')
+      // });
       
       // 确保清空内存中的数据
       this.resetTrackingData();
@@ -194,6 +189,9 @@ Page({
       startTime: new Date().getTime()
     });
     
+    // 启动位置更新，包括后台位置
+    LocationManager.initLocationTracking(this);
+    
     // 启动所有传感器和定时器
     this.startAllSensorsAndTimers();
     
@@ -206,6 +204,9 @@ Page({
   
   // 停止跟踪
   stopTracking: function(resetData = true) {
+    // 停止位置更新
+    LocationManager.stopLocationUpdates();
+    
     // 停止所有传感器和定时器
     this.stopAllSensorsAndTimers();
     
@@ -469,16 +470,16 @@ Page({
       lastWarningTime: 0
     });
     
-    // 直接清除本地存储
-    wx.removeStorage({
-      key: Constants.STORAGE_KEY_LOCATION,
-      success: () => console.log('位置缓存已清除')
-    });
+    // // 直接清除本地存储
+    // wx.removeStorage({
+    //   key: Constants.STORAGE_KEY_LOCATION,
+    //   success: () => console.log('位置缓存已清除')
+    // });
     
-    wx.removeStorage({
-      key: Constants.STORAGE_KEY_STEPS,
-      success: () => console.log('步数缓存已清除')
-    });
+    // wx.removeStorage({
+    //   key: Constants.STORAGE_KEY_STEPS,
+    //   success: () => console.log('步数缓存已清除')
+    // });
     
     console.log('所有跟踪数据已重置');
   },
