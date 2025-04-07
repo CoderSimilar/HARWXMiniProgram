@@ -467,19 +467,11 @@ Page({
       outOfAreaCount: 0,
       lastSyncedLocationIndex: 0,
       lastSyncedStepsIndex: 0,
-      lastWarningTime: 0
+      lastWarningTime: 0,
+      // 重置围栏相关数据
+      fenceMarkers: [],
+      originalPathPolyline: []
     });
-    
-    // // 直接清除本地存储
-    // wx.removeStorage({
-    //   key: Constants.STORAGE_KEY_LOCATION,
-    //   success: () => console.log('位置缓存已清除')
-    // });
-    
-    // wx.removeStorage({
-    //   key: Constants.STORAGE_KEY_STEPS,
-    //   success: () => console.log('步数缓存已清除')
-    // });
     
     console.log('所有跟踪数据已重置');
   },

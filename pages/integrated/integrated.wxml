@@ -25,6 +25,33 @@
         style="width: 100%; height: 350px;">
       </map>
       
+      <!-- 动作标记图例 -->
+      <view class="marker-legend" wx:if="{{tracking}}">
+        <view class="legend-title">动作标记图例</view>
+        <view class="legend-content">
+          <view class="legend-item">
+            <image src="/pages/integrated/images/markers/standing.png" mode="aspectFit" class="legend-icon"></image>
+            <text>站立</text>
+          </view>
+          <view class="legend-item">
+            <image src="/pages/integrated/images/markers/walking.png" mode="aspectFit" class="legend-icon"></image>
+            <text>行走</text>
+          </view>
+          <view class="legend-item">
+            <image src="/pages/integrated/images/markers/upstair.png" mode="aspectFit" class="legend-icon"></image>
+            <text>上楼梯</text>
+          </view>
+          <view class="legend-item">
+            <image src="/pages/integrated/images/markers/downstair.png" mode="aspectFit" class="legend-icon"></image>
+            <text>下楼梯</text>
+          </view>
+          <view class="legend-item">
+            <image src="/pages/integrated/images/markers/squatdown.png" mode="aspectFit" class="legend-icon"></image>
+            <text>蹲下</text>
+          </view>
+        </view>
+      </view>
+      
       <!-- 精准电子围栏绘制层 (覆盖在主地图上) -->
       <view wx:if="{{isRecordingFence || hasSetPreciseFence}}" 
             style="position: relative; width: 100%; height: 0;">

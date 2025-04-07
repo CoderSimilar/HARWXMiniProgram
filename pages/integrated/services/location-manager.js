@@ -56,14 +56,32 @@ const LocationManager = {
         let polyline = page.data.polyline;
         let cachedLocationData = page.data.cachedLocationData;
 
-        // 添加标记
-        markers.push({
+        // 添加标记 - 根据用户当前动作选择不同的标记图标
+        const currentAction = page.data.current_action || '暂无';
+        
+        // 获取动作对应的标记配置，如果没有匹配的配置则使用默认配置
+        const markerConfig = Constants.ACTION_MARKERS[currentAction] || Constants.ACTION_MARKERS['default'];
+        
+        // 创建标记，添加动作信息
+        const marker = {
           id: markers.length,
           latitude: latitude,
           longitude: longitude,
-          width: Constants.MARKER_SIZE,
-          height: Constants.MARKER_SIZE
-        });
+          iconPath: markerConfig.iconPath,
+          width: markerConfig.width,
+          height: markerConfig.height,
+          callout: {
+            content: currentAction,
+            color: '#000000',
+            fontSize: 10,
+            borderRadius: 5,
+            bgColor: '#ffffff',
+            padding: 5,
+            display: 'ALWAYS'
+          }
+        };
+        
+        markers.push(marker);
 
         // 添加轨迹点
         if (polyline.length > 0) {
@@ -77,7 +95,8 @@ const LocationManager = {
         cachedLocationData.push({
           latitude: latitude,
           longitude: longitude,
-          timestamp: timestamp
+          timestamp: timestamp,
+          action: currentAction // 同时存储当前动作类型
         });
         
         // 限制缓存数据大小
@@ -104,7 +123,7 @@ const LocationManager = {
           LocationManager.checkIfOutOfPreciseFence(page, latitude, longitude);
         }
         
-        console.log('位置轨迹已更新，当前位置:', latitude, longitude);
+        console.log('位置轨迹已更新，当前位置:', latitude, longitude, '当前动作:', currentAction);
         
         // 确保更新地图显示
         if (typeof page.updateMapDisplay === 'function') {
@@ -611,13 +630,36 @@ const LocationManager = {
     let polyline = page.data.polyline;
     let cachedLocationData = page.data.cachedLocationData;
 
-    // 添加标记
+    // 获取当前动作类型
+    const currentAction = page.data.current_action || '暂无';
+    
+    // 根据动作类型选择不同的标记图标
+    let markerIcon, markerWidth, markerHeight;
+    
+    // 使用常量中定义的动作标记配置
+    if (Constants.ACTION_MARKERS && Constants.ACTION_MARKERS[currentAction]) {
+      const actionMarker = Constants.ACTION_MARKERS[currentAction];
+      markerIcon = actionMarker.iconPath;
+      markerWidth = actionMarker.width;
+      markerHeight = actionMarker.height;
+    } else {
+      // 使用默认标记
+      markerIcon = Constants.ACTION_MARKERS['default'] ? 
+        Constants.ACTION_MARKERS['default'].iconPath : 
+        '/images/markers/default.png';
+      markerWidth = Constants.MARKER_SIZE;
+      markerHeight = Constants.MARKER_SIZE;
+    }
+    console.log("标记：", markerIcon)
+    // 添加带有动作类型的标记
     markers.push({
       id: markers.length,
       latitude: latitude,
       longitude: longitude,
-      width: Constants.MARKER_SIZE,
-      height: Constants.MARKER_SIZE
+      iconPath: markerIcon,
+      width: markerWidth,
+      height: markerHeight,
+      action: currentAction // 记录动作类型
     });
 
     // 添加轨迹点
@@ -628,11 +670,12 @@ const LocationManager = {
       });
     }
     
-    // 添加到缓存数据
+    // 添加到缓存数据，包含动作信息
     cachedLocationData.push({
       latitude: latitude,
       longitude: longitude,
-      timestamp: timestamp
+      timestamp: timestamp,
+      action: currentAction // 记录动作类型
     });
     
     // 限制缓存数据大小
@@ -659,7 +702,7 @@ const LocationManager = {
       LocationManager.checkIfOutOfPreciseFence(page, latitude, longitude);
     }
     
-    console.log('位置轨迹已更新，当前位置:', latitude, longitude);
+    console.log('位置轨迹已更新，当前位置:', latitude, longitude, '动作:', currentAction);
     
     // 确保更新地图显示
     if (typeof page.updateMapDisplay === 'function') {
@@ -669,4 +712,4 @@ const LocationManager = {
 };
 
 // 导出单例对象
-export default LocationManager; 
+export default LocationManager;
