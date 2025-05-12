@@ -339,13 +339,25 @@ const LocationManager = {
       });
     }
     
-    // 启动精准围栏记录定时器 - 不需要再单独获取位置
+    // 启动精准围栏记录定时器 - 定时主动获取位置
     page.timers.fenceRecording = setInterval(() => {
-      // 此处不再需要主动获取位置
-      // 在 handleLocationChange 中处理围栏点记录
-      if (page.data.isRecordingFence && page.data.latitude && page.data.longitude) {
-        this.addFencePointFromCurrent(page);
-      }
+      wx.getLocation({
+        type: Constants.LOCATION_TYPE,
+        success: (res) => {
+          if (page.data.isRecordingFence && res.latitude && res.longitude) {
+            // 用最新获取到的位置调用 addFencePointFromCurrent
+            // 临时更新 page.data
+            page.setData({
+              latitude: res.latitude,
+              longitude: res.longitude
+            });
+            this.addFencePointFromCurrent(page);
+          }
+        },
+        fail: (err) => {
+          console.error('获取位置失败:', err);
+        }
+      });
     }, Constants.FENCE_RECORDING_INTERVAL);
     
     wx.showToast({
@@ -366,7 +378,6 @@ const LocationManager = {
     // 避免记录距离太近的点
     const lastPoint = preciseFencePoints.length > 0 ? 
       preciseFencePoints[preciseFencePoints.length - 1] : null;
-    
     if (lastPoint) {
       // 使用LocationService计算距离，保持一致性
       const distance = LocationService.calculateDistance(
@@ -616,6 +627,9 @@ const LocationManager = {
     
     // 取消位置变化监听
     wx.offLocationChange();
+    
+    // 不清除地图上的轨迹和标记
+    console.log('位置更新已停止，但保留轨迹显示');
   },
 
   // 处理位置变化事件
@@ -624,10 +638,17 @@ const LocationManager = {
     
     const latitude = res.latitude;
     const longitude = res.longitude;
-    const timestamp = new Date().getTime();
-
-    let markers = page.data.markers;
+    
+    // 只更新轨迹数组
     let polyline = page.data.polyline;
+    if (polyline && polyline[0]) {
+      polyline[0].points.push({
+        latitude: latitude,
+        longitude: longitude
+      });
+    }
+    
+    let markers = page.data.markers;
     let cachedLocationData = page.data.cachedLocationData;
 
     // 获取当前动作类型
@@ -662,15 +683,8 @@ const LocationManager = {
       action: currentAction // 记录动作类型
     });
 
-    // 添加轨迹点
-    if (polyline.length > 0) {
-      polyline[0].points.push({
-        latitude: latitude,
-        longitude: longitude
-      });
-    }
-    
     // 添加到缓存数据，包含动作信息
+    const timestamp = new Date().getTime();
     cachedLocationData.push({
       latitude: latitude,
       longitude: longitude,

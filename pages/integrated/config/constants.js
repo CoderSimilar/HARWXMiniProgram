@@ -1,10 +1,10 @@
 // 位置相关常量
 export const LOCATION_TYPE = 'gcj02'
-export const TRACKING_INTERVAL = 3000
-export const DEFAULT_SCALE = 10000
-export const MARKER_SIZE = 10
-export const POLYLINE_WIDTH = 2
-export const POLYLINE_COLOR = '#FF0000DD'
+export const TRACKING_INTERVAL = 3000 // 位置刷新间隔
+export const DEFAULT_SCALE = 10000 // 地图默认缩放级别
+export const MARKER_SIZE = 15 // 标记大小
+export const POLYLINE_WIDTH = 4 // 标记线大小
+export const POLYLINE_COLOR = '#FF0000DD'  // 增加轨迹线不透明度
 
 // 区域相关常量
 export const CIRCLE_COLOR = '#1AAD19AA'
@@ -47,60 +47,60 @@ export const SYNC_INTERVAL = 60000
 export const STEP_REFRESH_INTERVAL = 60000
 
 // 精准电子围栏相关常量
-export const FENCE_COLOR = '#FF6A00DD'
-export const FENCE_FILL_COLOR = '#FF6A0033'
-export const FENCE_STROKE_WIDTH = 3
-export const FENCE_WIDTH = 4
-export const DEFAULT_FENCE_BUFFER = 15 // 默认围栏缓冲区大小（米）
-export const FENCE_RECORDING_INTERVAL = 3 * 1000 // 围栏记录点的时间间隔
-export const FENCE_MARKER_SIZE = 8 // 围栏点位标记大小
-export const FENCE_ORIGINAL_COLOR = '#0066FFDD' // 原始路径颜色
+export const FENCE_COLOR = '#0066FFDD'  // 改为蓝色系，与红色轨迹形成对比
+export const FENCE_FILL_COLOR = '#0066FF33'
+export const FENCE_STROKE_WIDTH = 4
+export const FENCE_WIDTH = 5
+export const DEFAULT_FENCE_BUFFER = 15
+export const FENCE_RECORDING_INTERVAL = 5 * 1000
+export const FENCE_MARKER_SIZE = 15
+export const FENCE_ORIGINAL_COLOR = '#0066FFAA'
 
 // 添加动作类型对应的标记配置
 export const ACTION_MARKERS = {
   'standing': {
-    iconPath: '/pages/integrated/images/markers/standing.png',  // 圆形标记
-    width: 20,
-    height: 20
+    iconPath: '/pages/integrated/images/markers/standing.png',  // 站立标记
+    width: 10,
+    height: 10
   },
   'walking': {
-    iconPath: '/pages/integrated/images/markers/walking.png',   // 方形标记
-    width: 20,
-    height: 20
+    iconPath: '/pages/integrated/images/markers/walking.png',   // 行走标记
+    width: 10,
+    height: 10
   },
   'upstair': {
-    iconPath: '/pages/integrated/images/markers/upstair.png',   // 三角形标记
-    width: 20,
-    height: 20
+    iconPath: '/pages/integrated/images/markers/upstair.png',   // 上楼标记
+    width: 10,
+    height: 10
   },
   'downstair': {
-    iconPath: '/pages/integrated/images/markers/downstair.png',   // 星形标记
-    width: 20,
-    height: 20
+    iconPath: '/pages/integrated/images/markers/downstair.png',   // 下楼标记
+    width: 10,
+    height: 10
   },
   'squatdown': {
     iconPath: '/pages/integrated/images/markers/squatdown.png',   // 蹲下标记
-    width: 20,
-    height: 20
+    width: 10,
+    height: 10
   },
   'raisearm': {
     iconPath: '/pages/integrated/images/markers/raisearm.png',   // 举手标记
-    width: 20,
-    height: 20
+    width: 10,
+    height: 10
   },
   'ladderup': {
     iconPath: '/pages/integrated/images/markers/ladderup.png',   // 爬梯子上标记
-    width: 20,
-    height: 20
+    width: 10,
+    height: 10
   },
   'ladderdown': {
     iconPath: '/pages/integrated/images/markers/ladderdown.png',   // 爬梯子下标记
-    width: 20,
-    height: 20
+    width: 10,
+    height: 10
   },
   'default': {
     iconPath: '/pages/integrated/images/markers/default.png',   // 默认标记
-    width: 20,
-    height: 20
+    width: 10,
+    height: 10
   }
 };

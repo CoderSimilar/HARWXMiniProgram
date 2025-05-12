@@ -25,7 +25,7 @@ export function calculateDistance(lat1, lon1, lat2, lon2) {
   return distance
 }
 
-// 添加新位置点
+// 添加新位置点 - 保持现有轨迹
 export function addLocationPoint(markers, polyline, locationData, latitude, longitude, timestamp) {
   // 添加标记
   const newMarkers = [...markers, {
@@ -36,7 +36,7 @@ export function addLocationPoint(markers, polyline, locationData, latitude, long
     height: Constants.MARKER_SIZE
   }]
 
-  // 添加轨迹点
+  // 添加轨迹点，保持现有轨迹
   let newPolyline = [...polyline]
   if (newPolyline.length > 0) {
     newPolyline[0] = {
@@ -52,7 +52,7 @@ export function addLocationPoint(markers, polyline, locationData, latitude, long
     timestamp: timestamp
   }]
   
-  // 限制缓存数据大小
+  // 限制缓存数据大小但保持轨迹显示
   const finalLocationData = newLocationData.length > Constants.MAX_CACHE_ITEMS ? 
     newLocationData.slice(-Constants.MAX_CACHE_ITEMS) : newLocationData
   
