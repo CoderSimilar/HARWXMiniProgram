@@ -1,7 +1,7 @@
 // 位置相关常量
 export const LOCATION_TYPE = 'gcj02'
-export const TRACKING_INTERVAL = 3000 // 位置刷新间隔
-export const DEFAULT_SCALE = 10000 // 地图默认缩放级别
+export const TRACKING_INTERVAL = 3 * 1000 // 位置刷新间隔 3秒
+export const DEFAULT_SCALE = 20 // 地图默认缩放级别
 export const MARKER_SIZE = 15 // 标记大小
 export const POLYLINE_WIDTH = 4 // 标记线大小
 export const POLYLINE_COLOR = '#FF0000DD'  // 增加轨迹线不透明度
@@ -52,7 +52,7 @@ export const FENCE_FILL_COLOR = '#0066FF33'
 export const FENCE_STROKE_WIDTH = 4
 export const FENCE_WIDTH = 5
 export const DEFAULT_FENCE_BUFFER = 15
-export const FENCE_RECORDING_INTERVAL = 5 * 1000
+export const FENCE_RECORDING_INTERVAL = 3 * 1000
 export const FENCE_MARKER_SIZE = 15
 export const FENCE_ORIGINAL_COLOR = '#0066FFAA'
 

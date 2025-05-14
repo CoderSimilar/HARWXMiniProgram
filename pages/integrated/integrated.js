@@ -14,7 +14,7 @@ Page({
     latitude: '',
     longitude: '',
     markers: [],
-    polyline: [{  // 用户轨迹线
+    polyline: [{ // 用户轨迹线
       points: [],
       color: Constants.POLYLINE_COLOR,
       width: Constants.POLYLINE_WIDTH,
@@ -47,7 +47,7 @@ Page({
     lastSyncTime: 0,
     lastSyncedLocationIndex: 0,
     lastSyncedStepsIndex: 0,
-    isSyncing: false,  // 同步锁，防止并发同步
+    isSyncing: false, // 同步锁，防止并发同步
     preciseFencePoints: [],
     isRecordingFence: false,
     hasSetPreciseFence: false,
@@ -63,11 +63,14 @@ Page({
     tempCircles: null,
     includePoints: [],
     fenceMarkers: [], // 围栏点位标记
-    originalPathPolyline: [] // 原始路径线条
+    originalPathPolyline: [], // 原始路径线条
+    displayPolylines: [], // 用于显示的所有线条
+    displayMarkers: [], // 用于显示的所有标记点
+    isManualFencing: false, // 是否为手动设置围栏模式
   },
-  
+
   // 页面加载
-  onLoad: function() {
+  onLoad: function () {
     // 在这里初始化 timers 对象
     this.timers = {
       location: null,
@@ -80,7 +83,7 @@ Page({
       networkCheck: null,
       fenceRecording: null // 添加围栏记录定时器
     };
-    
+
     // 初始化空轨迹
     this.setData({
       action_counts: {},
@@ -91,80 +94,80 @@ Page({
         dottedLine: false
       }]
     });
-    
+
     // 检查网络状态
     DataManager.checkNetworkStatus(this);
-    
+
     // 加载缓存数据
     DataManager.loadCachedData(this);
-    
+
     console.log('页面加载完成');
   },
-  
+
   // 页面显示
-  onShow: function() {
+  onShow: function () {
     // 如果正在跟踪，恢复传感器和定时器
     if (this.data.tracking) {
       this.startAllSensorsAndTimers();
     }
-    
+
     // 确保围栏显示
     if (this.data.hasSetPreciseFence && this.data.preciseFence) {
       this.renderPreciseFence();
     }
-    
+
     // 重新渲染地图
     this.updateMapDisplay();
   },
-  
+
   // 页面隐藏
-  onHide: function() {
+  onHide: function () {
     // 停止传感器，但保持定时器运行
     if (this.data.tracking) {
       SensorManager.stopAllSensors();
     }
   },
-  
+
   // 页面卸载
-  onUnload: function() {
+  onUnload: function () {
     // 如果正在跟踪，先同步最终数据
     if (this.data.tracking) {
       // 保存缓存数据
       DataManager.saveCacheData(this);
-      
+
       // 尝试同步
       if (this.data.isOnline) {
         DataManager.syncDataWithServer(this);
       }
-      
+
       // 停止所有传感器和定时器
       this.stopAllSensorsAndTimers();
-      
+
       // 更新跟踪状态
       this.setData({
         tracking: false
       });
     }
-    
+
     // 清空缓存和轨迹数据
     this.resetTrackingData();
-    
+
     console.log('页面已卸载，所有功能已停止');
   },
-  
+
   // ========= 位置相关函数 =========
-  
+
   // 获取位置
-  getLocation: function() {
+  getLocation: function () {
     LocationManager.getCurrentLocation(this);
   },
-  
+
   // 开始或停止跟踪
-  toggleTracking: function() {
+  toggleTracking: function () {
     if (this.data.tracking) {
       // 停止跟踪，但不清除轨迹数据
       this.stopTracking(false); // 传入 false 表示不重置数据
-      
+
       wx.showToast({
         title: '监测已停止',
         icon: 'success',
@@ -175,150 +178,287 @@ Page({
       this.startTracking();
     }
   },
-  
+
   // 开始跟踪
-  startTracking: function() {
+  startTracking: function () {
     // 设置状态
     this.setData({
       tracking: true,
       isReading: true,
-      startTime: new Date().getTime()
+      startTime: new Date().getTime(),
+      // 确保 polyline 正确初始化
+      polyline: [{
+        points: [],
+        color: Constants.POLYLINE_COLOR,
+        width: Constants.POLYLINE_WIDTH,
+        dottedLine: false
+      }]
     });
-    
+
     // 启动位置更新，包括后台位置
     LocationManager.initLocationTracking(this);
-    
+
     // 启动所有传感器和定时器
     this.startAllSensorsAndTimers();
-    
+
+    // 更新地图显示
+    this.updateMapDisplay();
+
     wx.showToast({
       title: '监测已开始',
       icon: 'success',
       duration: Constants.TOAST_DURATION
     });
   },
-  
+
   // 停止跟踪
-  stopTracking: function(resetData = false) { // 默认不重置数据
+  stopTracking: function (resetData = false) {
     // 停止位置更新
     LocationManager.stopLocationUpdates();
-    
+
     // 停止所有传感器和定时器
     this.stopAllSensorsAndTimers();
-    
+
     // 在停止之前保存当前缓存数据
     DataManager.saveCacheData(this);
-    
-    // 更新状态
+
+    // 更新状态，但保留轨迹数据
     this.setData({
-      tracking: false
+      tracking: false,
+      isReading: false
     });
-    
+
+    // 更新地图显示
+    this.updateMapDisplay();
+
     // 只有在明确要求时才重置数据
     if (resetData) {
       this.resetTrackingData();
     }
   },
-  
+
   // 启动所有传感器和定时器
-  startAllSensorsAndTimers: function() {
+  startAllSensorsAndTimers: function () {
     // 启动动作识别传感器
     ActionManager.startActionSensors(this);
-    
+
     // 启动步数检测
     StepManager.startStepDetection(this);
-    
+
     // 启动所有定时器
     TimerManager.startAllTimers(this);
   },
-  
+
   // 开始设置区域
-  startSettingArea: function() {
+  startSettingArea: function () {
     LocationManager.startSettingArea(this);
   },
-  
+
   // 确认设置区域
-  confirmArea: function() {
+  confirmArea: function () {
     LocationManager.confirmArea(this);
   },
-  
+
   // 取消设置区域
-  cancelArea: function() {
+  cancelArea: function () {
     LocationManager.cancelArea(this);
   },
-  
+
   // 增加区域半径
-  increaseRadius: function() {
+  increaseRadius: function () {
     LocationManager.adjustRadius(this, true);
   },
-  
+
   // 减少区域半径
-  decreaseRadius: function() {
+  decreaseRadius: function () {
     LocationManager.adjustRadius(this, false);
   },
-  
-  // 地图点击事件，简化围栏点位添加逻辑，保持与轨迹点位一致
-  onMapTap: function(e) {
-    const { latitude, longitude } = e.detail;
-    
-    if (this.data.isSettingArea) {
-      // 设置圆形区域部分不变...
-    } else if (this.data.isRecordingFence) {
-      // 添加围栏点，更接近轨迹记录逻辑
-      const preciseFencePoints = [...this.data.preciseFencePoints];
-      
-      // 避免重复添加距离很近的点
-      const lastPoint = preciseFencePoints.length > 0 ? 
-        preciseFencePoints[preciseFencePoints.length - 1] : null;
-      
-      if (lastPoint) {
-        // 使用PolygonFenceService计算距离
-        const distanceFromLast = PolygonFenceService.calculateHaversineDistance(
-          lastPoint.latitude, lastPoint.longitude, latitude, longitude);
-        
-        // 如果与上一个点距离太近（小于2米），则不添加
-        if (distanceFromLast < 2) {
-          console.log('忽略距离太近的点', distanceFromLast);
-          return;
+
+  // 切换围栏设置模式
+  toggleFencingMode: function () {
+    const newMode = !this.data.isManualFencing;
+
+    // 切换模式时清空已记录的点
+    this.setData({
+      isManualFencing: newMode,
+      preciseFencePoints: [],
+      fenceMarkers: [],
+      fencePolyline: [{
+        points: [],
+        color: Constants.FENCE_COLOR,
+        width: Constants.FENCE_WIDTH,
+        dottedLine: false
+      }]
+    });
+
+    // 更新地图显示
+    this.updateMapDisplay();
+
+    // 如果切换到手动模式，停止位置更新
+    if (newMode) {
+      LocationManager.stopLocationUpdates();
+    } else {
+      // 如果切换到轨迹记录模式，重新开始位置更新
+      wx.startLocationUpdate({
+        success: () => {
+          console.log('位置更新已启动');
+          // 启动位置变化监听
+          wx.onLocationChange((res) => {
+            if (!this.data.isManualFencing && this.data.isRecordingFence) {
+              this.addFencePointFromLocation(res);
+            }
+          });
+        },
+        fail: (err) => {
+          console.error('位置更新启动失败:', err);
+          wx.showToast({
+            title: '位置更新启动失败',
+            icon: 'none'
+          });
         }
-      }
-      
-      preciseFencePoints.push({ latitude, longitude });
-      
-      // 使用PolygonFenceService生成可视化元素，保持与轨迹记录一致的风格
-      const fencePolyline = PolygonFenceService.createFencePolyline(preciseFencePoints);
-      const fenceMarkers = PolygonFenceService.createFenceMarkers(preciseFencePoints);
-      
+      });
+    }
+  },
+
+  // 添加从位置更新获取的围栏点
+  addFencePointFromLocation: function (res) {
+    const {
+      latitude,
+      longitude
+    } = res;
+    let preciseFencePoints = [...this.data.preciseFencePoints];
+
+    // 如果是第一个点，或者与上一个点的距离超过最小距离，则添加新点
+    if (preciseFencePoints.length === 0 ||
+      LocationManager.calculateDistance(
+        preciseFencePoints[preciseFencePoints.length - 1].latitude,
+        preciseFencePoints[preciseFencePoints.length - 1].longitude,
+        latitude,
+        longitude
+      ) >= Constants.MIN_FENCE_POINT_DISTANCE
+    ) {
+      // 添加新的围栏点
+      preciseFencePoints.push({
+        latitude,
+        longitude
+      });
+
+      // 创建围栏标记
+      const fenceMarkers = preciseFencePoints.map((point, index) => ({
+        id: `fence_${index}`,
+        latitude: point.latitude,
+        longitude: point.longitude,
+        width: Constants.FENCE_MARKER_SIZE,
+        height: Constants.FENCE_MARKER_SIZE,
+        iconPath: Constants.FENCE_MARKER_ICON,
+        callout: {
+          content: `围栏点 ${index + 1}`,
+          color: '#000000',
+          fontSize: 10,
+          borderRadius: 5,
+          bgColor: '#ffffff',
+          padding: 5,
+          display: 'ALWAYS'
+        }
+      }));
+
+      // 更新围栏线
+      const fencePolyline = [{
+        points: preciseFencePoints,
+        color: Constants.FENCE_COLOR,
+        width: Constants.FENCE_WIDTH,
+        dottedLine: false
+      }];
+
       this.setData({
         preciseFencePoints,
-        fencePolyline,
-        fenceMarkers
+        fenceMarkers,
+        fencePolyline
       });
-      
+
+      // 更新地图显示
+      this.updateMapDisplay();
+
+      console.log('自动添加围栏点:', latitude, longitude, '当前点数:', preciseFencePoints.length);
+    }
+  },
+
+  // 修改地图点击事件处理
+  onMapTap: function (e) {
+    if (this.data.isRecordingFence && this.data.isManualFencing) {
+      const {
+        latitude,
+        longitude
+      } = e.detail;
+      let preciseFencePoints = [...this.data.preciseFencePoints];
+
+      // 如果是第一个点，或者与上一个点的距离超过最小距离，则添加新点
+      // 添加新的围栏点
+      preciseFencePoints.push({
+        latitude,
+        longitude
+      });
+
+      // 创建围栏标记
+      const fenceMarkers = preciseFencePoints.map((point, index) => ({
+        id: `fence_${index}`,
+        latitude: point.latitude,
+        longitude: point.longitude,
+        width: Constants.FENCE_MARKER_SIZE,
+        height: Constants.FENCE_MARKER_SIZE,
+        iconPath: Constants.FENCE_MARKER_ICON,
+        callout: {
+          content: `围栏点 ${index + 1}`,
+          color: '#000000',
+          fontSize: 10,
+          borderRadius: 5,
+          bgColor: '#ffffff',
+          padding: 5,
+          display: 'ALWAYS'
+        }
+      }));
+
+      // 更新围栏线
+      const fencePolyline = [{
+        points: preciseFencePoints,
+        color: Constants.FENCE_COLOR,
+        width: Constants.FENCE_WIDTH,
+        dottedLine: false
+      }];
+
+      this.setData({
+        preciseFencePoints,
+        fenceMarkers,
+        fencePolyline
+      });
+
+      // 更新地图显示
+      this.updateMapDisplay();
+
       console.log('手动添加围栏点:', latitude, longitude, '当前点数:', preciseFencePoints.length);
     }
   },
-  
+
   // 滑块改变事件
-  onRadiusSliderChange: function(e) {
+  onRadiusSliderChange: function (e) {
     if (!this.data.isSettingArea && !this.data.hasSetArea) return;
-    
+
     const newRadius = e.detail.value;
     const circles = [{
       ...this.data.circles[0],
       radius: newRadius
     }];
-    
+
     this.setData({
       areaRadius: newRadius,
       circles: circles
     });
   },
-  
+
   // ========= 数据管理功能 =========
-  
+
   // 清空所有数据
-  clearAllData: function() {
+  clearAllData: function () {
     wx.showModal({
       title: '确认清除数据',
       content: '这将清除所有位置和步数数据，请确认操作',
@@ -329,9 +469,9 @@ Page({
       }
     });
   },
-  
+
   // 手动同步数据
-  manualSync: function() {
+  manualSync: function () {
     if (!this.data.isOnline) {
       wx.showToast({
         title: '当前网络不可用',
@@ -340,12 +480,26 @@ Page({
       });
       return;
     }
-    
+
     DataManager.syncDataWithServer(this);
   },
-  
-  // 开始记录精准电子围栏
-  startRecordingPreciseFence: function() {
+
+  // 修改开始记录精准电子围栏的方法
+  startRecordingPreciseFence: function () {
+    // 默认从手动模式开始
+    this.setData({
+      isManualFencing: true,
+      isRecordingFence: true,
+      preciseFencePoints: [],
+      fenceMarkers: [],
+      fencePolyline: [{
+        points: [],
+        color: Constants.FENCE_COLOR,
+        width: Constants.FENCE_WIDTH,
+        dottedLine: false
+      }]
+    });
+
     // 如果正在跟踪，提示用户
     if (this.data.tracking) {
       wx.showModal({
@@ -357,56 +511,58 @@ Page({
             this.data._trackingBeforeFence = true;
             // 停止跟踪但不重置数据
             this.stopTracking(false);
-            // 开始记录围栏
-            LocationManager.startRecordingPreciseFence(this);
+          } else {
+            // 取消设置围栏
+            this.cancelPreciseFence();
           }
         }
       });
-    } else {
-      LocationManager.startRecordingPreciseFence(this);
     }
+
+    // 更新地图显示
+    this.updateMapDisplay();
   },
-  
+
   // 完成精准电子围栏设置
-  finishPreciseFence: function() {
+  finishPreciseFence: function () {
     LocationManager.finishPreciseFence(this);
   },
-  
+
   // 取消精准电子围栏设置
-  cancelPreciseFence: function() {
+  cancelPreciseFence: function () {
     LocationManager.cancelPreciseFence(this);
   },
-  
+
   // 修改围栏缓冲区大小
-  adjustFenceBuffer: function(e) {
+  adjustFenceBuffer: function (e) {
     const newBuffer = e.detail.value;
     this.setData({
       preciseFenceBuffer: newBuffer
     });
-    
+
     // 如果已设置围栏，更新缓冲区
     if (this.data.hasSetPreciseFence && this.data.preciseFence) {
       const bufferedPoints = PolygonFenceService.createBufferZone(
         this.data.preciseFence.originalPoints,
         newBuffer
       );
-      
+
       const polygon = [{
         points: bufferedPoints,
         strokeWidth: Constants.FENCE_STROKE_WIDTH,
         strokeColor: Constants.FENCE_COLOR,
         fillColor: Constants.FENCE_FILL_COLOR
       }];
-      
+
       this.setData({
         'preciseFence.bufferedPoints': bufferedPoints,
         polygon: polygon
       });
     }
   },
-  
+
   // 清除精准围栏
-  clearPreciseFence: function() {
+  clearPreciseFence: function () {
     wx.showModal({
       title: '清除精准围栏',
       content: '确定要清除当前设置的精准电子围栏吗？',
@@ -426,7 +582,7 @@ Page({
             originalPathPolyline: [],
             polygon: []
           });
-          
+
           wx.showToast({
             title: '已清除精准围栏',
             icon: 'success',
@@ -436,9 +592,9 @@ Page({
       }
     });
   },
-  
-  // 添加一个方法用于重置所有缓存和状态
-  resetTrackingData: function() {
+
+  // 重置所有缓存和状态
+  resetTrackingData: function () {
     // 初始化空轨迹和标记
     this.setData({
       markers: [],
@@ -463,97 +619,71 @@ Page({
       fenceMarkers: [],
       originalPathPolyline: []
     });
-    
+
     console.log('所有跟踪数据已重置');
   },
-  
-  // 计算用于显示的折线
-  getDisplayPolyline: function() {
+
+  // 更新地图显示
+  updateMapDisplay: function () {
+    let displayPolylines = [];
+    let displayMarkers = [];
+
     if (this.data.isRecordingFence) {
-      // 记录围栏时只显示围栏线
-      return this.data.fencePolyline;
+      // 记录围栏模式
+      displayPolylines = this.data.fencePolyline;
+      displayMarkers = this.data.markers.concat(this.data.fenceMarkers);
     } else if (this.data.hasSetPreciseFence) {
-      // 已设置围栏时，显示围栏线和轨迹线
-      return this.data.originalPathPolyline.concat(this.data.polyline);
-    }
-    // 普通情况下显示轨迹线
-    return this.data.polyline;
-  },
-  
-  // 计算用于显示的标记
-  getDisplayMarkers: function() {
-    if (this.data.isRecordingFence) {
-      // 合并轨迹标记和围栏标记
-      return this.data.markers.concat(this.data.fenceMarkers);
-    }
-    return this.data.markers;
-  },
-  
-  // 添加一个方法用于更新地图显示
-  updateMapDisplay: function() {
-    // 确保地图组件正确显示
-    if (this.data.isRecordingFence) {
-      // 记录围栏模式：主地图显示空白，围栏地图显示围栏线和点位
-      this.setData({
-        polyline: [],
-        markers: [],
-        fencePolyline: this.data.fencePolyline,
-        fenceMarkers: this.data.fenceMarkers
-      });
-    } else if (this.data.hasSetPreciseFence) {
-      // 已设置围栏模式：主地图只显示轨迹，围栏地图只显示围栏
-      this.setData({
-        polyline: this.data.polyline,
-        markers: this.data.markers,
-        originalPathPolyline: [{
-          points: this.data.preciseFence.originalPoints,
-          color: Constants.FENCE_ORIGINAL_COLOR,
+      // 已设置围栏模式，显示轨迹线和围栏线
+      displayPolylines = [
+        // 用户轨迹线
+        {
+          points: this.data.polyline[0]?.points || [],
+          color: Constants.POLYLINE_COLOR,
+          width: Constants.POLYLINE_WIDTH,
+          dottedLine: false
+        },
+        // 围栏线
+        {
+          points: this.data.preciseFence?.originalPoints || [],
+          color: Constants.FENCE_COLOR,
           width: Constants.FENCE_WIDTH,
           dottedLine: true
-        }],
-        fencePolyline: [{
-          points: [],
-          color: Constants.FENCE_COLOR,
-          width: Constants.FENCE_WIDTH,
-          dottedLine: false
-        }],
-        fenceMarkers: []
-      });
+        }
+      ];
+      // 同时显示轨迹标记和围栏标记点
+      displayMarkers = this.data.markers.concat(this.data.fenceMarkers);
     } else {
-      // 普通模式：只显示轨迹
-      this.setData({
-        polyline: this.data.polyline,
-        markers: this.data.markers,
-        fencePolyline: [{
-          points: [],
-          color: Constants.FENCE_COLOR,
-          width: Constants.FENCE_WIDTH,
-          dottedLine: false
-        }],
-        fenceMarkers: []
-      });
+      // 普通模式
+      displayPolylines = this.data.polyline;
+      displayMarkers = this.data.markers;
     }
+
+    // 更新显示数据
+    this.setData({
+      displayPolylines: displayPolylines,
+      displayMarkers: displayMarkers
+    });
   },
-  
+
   // 停止所有传感器和定时器
-  stopAllSensorsAndTimers: function() {
+  stopAllSensorsAndTimers: function () {
     // 停止所有传感器
     SensorManager.stopAllSensors();
-    
+
     // 停止所有定时器
     TimerManager.stopAllTimers(this);
-    
+
     // 设置状态
     this.setData({
       isReading: false
     });
-    
+
     console.log('所有传感器和定时器已停止');
   },
-  // 添加一个方法专门用于渲染精准电子围栏
-  renderPreciseFence: function() {
+  // 渲染精准电子围栏
+  renderPreciseFence: function () {
     if (!this.data.preciseFence) return;
-    
+
     // 设置围栏线条
     const fencePolyline = [{
       points: this.data.preciseFence.bufferPoints || [],
@@ -561,7 +691,7 @@ Page({
       width: Constants.FENCE_WIDTH,
       dottedLine: false
     }];
-    
+
     // 设置原始路径线条
     const originalPathPolyline = [{
       points: this.data.preciseFence.originalPoints || [],
@@ -569,18 +699,15 @@ Page({
       width: Constants.FENCE_WIDTH - 1,
       dottedLine: true
     }];
-    
+
     // 更新数据
     this.setData({
       fencePolyline: fencePolyline,
       originalPathPolyline: originalPathPolyline,
       fenceMarkers: this.data.fenceMarkers
     });
-  },
 
-  // 计算显示的轨迹线
-  getDisplayPolylines: function() {
-    // 合并轨迹线和围栏线
-    return this.data.polyline.concat(this.data.fencePolyline);
+    // 更新地图显示
+    this.updateMapDisplay();
   }
 });

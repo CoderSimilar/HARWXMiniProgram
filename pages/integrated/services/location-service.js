@@ -28,37 +28,45 @@ export function calculateDistance(lat1, lon1, lat2, lon2) {
 // 添加新位置点 - 保持现有轨迹
 export function addLocationPoint(markers, polyline, locationData, latitude, longitude, timestamp) {
   // 添加标记
-  const newMarkers = [...markers, {
-    id: markers.length,
+  const newMarkers = [...(markers || []), {
+    id: (markers || []).length,
     latitude: latitude,
     longitude: longitude,
     width: Constants.MARKER_SIZE,
     height: Constants.MARKER_SIZE
-  }]
+  }];
 
-  // 添加轨迹点，保持现有轨迹
-  let newPolyline = [...polyline]
-  if (newPolyline.length > 0) {
-    newPolyline[0] = {
-      ...newPolyline[0],
-      points: [...newPolyline[0].points, { latitude, longitude }]
-    }
+  // 确保 polyline 正确初始化
+  let newPolyline = polyline;
+  if (!newPolyline || newPolyline.length === 0) {
+    newPolyline = [{
+      points: [],
+      color: Constants.POLYLINE_COLOR,
+      width: Constants.POLYLINE_WIDTH,
+      dottedLine: false
+    }];
   }
+
+  // 添加轨迹点
+  newPolyline[0].points.push({
+    latitude: latitude,
+    longitude: longitude
+  });
   
   // 添加到缓存数据
-  const newLocationData = [...locationData, {
+  const newLocationData = [...(locationData || []), {
     latitude: latitude,
     longitude: longitude,
     timestamp: timestamp
-  }]
+  }];
   
-  // 限制缓存数据大小但保持轨迹显示
+  // 限制缓存数据大小
   const finalLocationData = newLocationData.length > Constants.MAX_CACHE_ITEMS ? 
-    newLocationData.slice(-Constants.MAX_CACHE_ITEMS) : newLocationData
+    newLocationData.slice(-Constants.MAX_CACHE_ITEMS) : newLocationData;
   
   return {
     markers: newMarkers,
     polyline: newPolyline,
     locationData: finalLocationData
-  }
+  };
 } 

@@ -256,11 +256,6 @@ const LocationManager = {
             page.setData({ lastWarningTime: currentTime });
           }
         });
-        
-        // 可选：播放警告声音
-        const innerAudioContext = wx.createInnerAudioContext();
-        innerAudioContext.src = '/assets/warning.mp3'; // 假设有警告音频文件
-        innerAudioContext.play();
       }
       
       console.log(`超出活动范围: 距离圆心${distance.toFixed(2)}米，超出${(distance - page.data.areaRadius).toFixed(2)}米`);
@@ -524,18 +519,86 @@ const LocationManager = {
     const point = { latitude, longitude };
     
     try {
-      const isInside = PolygonFenceService.isPointInPolygon(point, polygon);
-      const isOutOfArea = !isInside;
-      const currentTime = new Date().getTime();
+      // 使用简化的方式检查是否在围栏内
+      // 1. 先判断点是否在围栏内
+      let isInside = false;
+      let distanceToPolygon = Infinity;
       
-      if (isOutOfArea) {
+      try {
+        // 尝试使用isPointInPolygon，如果出错则使用备用方案
+        isInside = PolygonFenceService.isPointInPolygon(point, polygon);
+      } catch (polygonError) {
+        console.warn('使用isPointInPolygon判断失败，使用备用方法:', polygonError);
+        // 备用方案：使用简单的包围盒检查
+        const bbox = PolygonFenceService.calculateBoundingBox(polygon);
+        if (bbox) {
+          const EPSILON = 0.0001; // 大约10米的经纬度误差
+          isInside = 
+            point.longitude >= bbox.southwest.longitude - EPSILON && 
+            point.longitude <= bbox.northeast.longitude + EPSILON &&
+            point.latitude >= bbox.southwest.latitude - EPSILON && 
+            point.latitude <= bbox.northeast.latitude + EPSILON;
+        }
+      }
+      
+      // 2. 尝试计算点到多边形的距离
+      try {
+        distanceToPolygon = PolygonFenceService.calculateDistanceToPolygon(point, polygon);
+        console.log(`点到多边形的距离: ${distanceToPolygon.toFixed(2)}米`);
+      } catch (distanceError) {
+        console.warn('计算点到多边形距离失败:', distanceError);
+        // 如果距离计算失败，使用固定值
+        distanceToPolygon = isInside ? 0 : 10; // 如果在内部设为0，否则设为10米
+      }
+      
+      // 设置缓冲区，如果在边界5米范围内，则视为未出界
+      const bufferZone = 5; // 5米缓冲区
+      
+      // 如果点在多边形内部，或距离边界很近，视为在范围内
+      const isEffectivelyInside = isInside || distanceToPolygon <= bufferZone;
+      const isOutOfArea = !isEffectivelyInside;
+      
+      // 对于状态变化进行计数和处理
+      if (page.data._lastFenceStatus !== isOutOfArea) {
+        // 状态发生变化，记录变化次数和时间
+        page.data._fenceStatusChangeCount = (page.data._fenceStatusChangeCount || 0) + 1;
+        page.data._lastFenceStatusChangeTime = new Date().getTime();
+        page.data._lastFenceStatus = isOutOfArea;
+        
+        console.log(`围栏状态变化: ${isOutOfArea ? '超出围栏' : '返回围栏内'}, 变化次数: ${page.data._fenceStatusChangeCount}`);
+        
+        // 如果短时间内状态变化次数过多，可能是在边界附近波动，此时保持上一个稳定状态
+        if (page.data._fenceStatusChangeCount > 3) {
+          const timeSinceFirstChange = new Date().getTime() - (page.data._firstChangeTime || page.data._lastFenceStatusChangeTime);
+          if (timeSinceFirstChange < 10000) { // 10秒内
+            console.log('短时间内状态变化过于频繁，忽略此次变化');
+            return page.data._stableOutOfAreaStatus || false; // 返回上一个稳定状态
+          } else {
+            // 重置计数
+            page.data._fenceStatusChangeCount = 1;
+            page.data._firstChangeTime = page.data._lastFenceStatusChangeTime;
+          }
+        }
+        
+        if (page.data._fenceStatusChangeCount === 1) {
+          page.data._firstChangeTime = page.data._lastFenceStatusChangeTime;
+        }
+      }
+      
+      // 只有当状态稳定时才更新计数和提示
+      if (isOutOfArea && (page.data._fenceStatusChangeCount || 0) <= 3) {
         // 增加超出区域计数
-        const newCount = page.data.outOfAreaCount + 1;
+        const newCount = (page.data.outOfAreaCount || 0) + 1;
+        const currentTime = new Date().getTime();
+        
+        // 更新稳定状态
+        page.data._stableOutOfAreaStatus = true;
+        
         page.setData({ outOfAreaCount: newCount });
         
         // 检查是否达到警告阈值 & 是否超过冷却时间
         if (newCount >= Constants.OUT_OF_AREA_THRESHOLD && 
-            currentTime - page.data.lastWarningTime > Constants.WARNING_COOLDOWN) {
+            currentTime - (page.data.lastWarningTime || 0) > Constants.WARNING_COOLDOWN) {
           // 发出警告
           wx.showModal({
             title: '超出活动范围警告',
@@ -548,18 +611,25 @@ const LocationManager = {
           });
         }
         
-        console.log('超出精准活动范围');
+        console.log(`超出精准活动范围，距离边界${distanceToPolygon.toFixed(2)}米`);
         return true;
-      } else {
+      } else if (!isOutOfArea && (page.data._fenceStatusChangeCount || 0) <= 3) {
         // 如果返回区域内，重置计数
-        if (page.data.outOfAreaCount > 0) {
+        if ((page.data.outOfAreaCount || 0) > 0) {
+          // 更新稳定状态
+          page.data._stableOutOfAreaStatus = false;
+          
           page.setData({ outOfAreaCount: 0 });
           console.log('已返回精准活动范围内');
         }
         return false;
       }
+      
+      // 如果状态不稳定，返回上一个稳定状态
+      return page.data._stableOutOfAreaStatus || false;
     } catch (error) {
       console.error('检查是否超出精准围栏时出错:', error);
+      // 出错时返回false(认为在围栏内)，防止频繁报警
       return false;
     }
   },
