@@ -667,21 +667,22 @@ const LocationManager = {
     wx.startLocationUpdate({
       success: () => {
         console.log('前台位置更新已启动');
-        
+        // 睡一秒
+        setTimeout(() => {
         // 2. 再注册位置变化监听
-        wx.onLocationChange(res => {
-          this.handleLocationChange(page, res);
-        });
-        
-        // 3. 最后才尝试启动后台位置
-        wx.startLocationUpdateBackground({
-          success: () => {
-            console.log('后台位置更新已启动');
-          },
-          fail: (err) => {
-            console.error('后台位置启动失败:', err);
-          }
-        });
+          wx.onLocationChange(res => {
+            this.handleLocationChange(page, res);
+            });
+        }, 1000);
+        // // 3. 最后才尝试启动后台位置
+        // wx.startLocationUpdateBackground({
+        //   success: () => {
+        //     console.log('后台位置更新已启动');
+        //   },
+        //   fail: (err) => {
+        //     console.error('后台位置启动失败:', err);
+        //   }
+        // });
       }
     });
   },
@@ -708,7 +709,7 @@ const LocationManager = {
     
     const latitude = res.latitude;
     const longitude = res.longitude;
-    
+    console.log(page.data.polyline)
     // 只更新轨迹数组
     let polyline = page.data.polyline;
     if (polyline && polyline[0]) {
